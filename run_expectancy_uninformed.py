@@ -39,3 +39,12 @@ n_steps = 100
 runs_expected = np.hstack([(np.linalg.matrix_power(transitions.values, i - 1) @ (transitions.values * rewards.values)).sum(axis=1).reshape(-1, 1) for i in range(1, n_steps + 1)]).sum(axis=1)
 runs_expected = pd.DataFrame(data=runs_expected, index=transitions.index, columns=['runs_expected'])
 print(runs_expected)
+
+
+# NET EXPECTED RUNS (SINGLE STEP)
+df = df.join(runs_expected, on='game_state')
+df = df.join(runs_expected, on='next_state', rsuffix='_next')
+df['net_runs_expected'] = df['runs_scored'] + df['runs_expected_next'] - df['runs_expected']
+
+net_runs_expected = pd.pivot_table(data=df.loc[df['transition_count'] > 0], values='net_runs_expected', index='game_state', columns='next_state', fill_value=0)
+print(net_runs_expected)
